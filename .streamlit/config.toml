@@ -1,0 +1,21 @@
+[theme]
+font = "Barlow:https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&display=swap, sans-serif"
+headingFont = "Barlow Condensed:https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap, sans-serif"
+baseRadius = "10px"
+
+[theme.light]
+primaryColor = "#0E6B66"
+backgroundColor = "#EDF0EE"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#16242A"
+borderColor = "#D3D9D7"
+
+[theme.dark]
+primaryColor = "#3FB8AE"
+backgroundColor = "#0F1A1D"
+secondaryBackgroundColor = "#172529"
+textColor = "#E6EEEC"
+borderColor = "#2A3B40"
+
+[client]
+toolbarMode = "minimal"

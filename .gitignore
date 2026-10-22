@@ -1,0 +1,8 @@
+# Never commit the Garmin key or pulled data
+.env.local
+.env
+data/
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+.venv/
