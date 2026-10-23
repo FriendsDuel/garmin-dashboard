@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import os
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -110,6 +111,28 @@ def get_client(fingerprint: str, _key: str) -> gc.GarminClient:
 def pull(fingerprint: str, start_iso: str, end_iso: str, _client: gc.GarminClient) -> dict:
     return gc.pull_all(_client, date.fromisoformat(start_iso), date.fromisoformat(end_iso))
 
+
+def password_gate() -> None:
+    """If APP_PASSWORD is set in Secrets, nothing loads until it's entered."""
+    try:
+        expected = str(st.secrets.get("APP_PASSWORD", ""))
+    except Exception:
+        expected = ""
+    if not expected or st.session_state.get("unlocked"):
+        return
+    st.markdown(f"# {PROGRAM['name']}")
+    with st.form("unlock"):
+        pw = st.text_input("Password", type="password", autocomplete="current-password")
+        ok = st.form_submit_button("Unlock", type="primary")
+    if ok:
+        if hmac.compare_digest(pw.encode(), expected.encode()):
+            st.session_state["unlocked"] = True
+            st.rerun()
+        st.error("That password isn't right.")
+    st.stop()
+
+
+password_gate()
 
 TODAY = datetime.now(ZoneInfo(TIMEZONE)).date()
 

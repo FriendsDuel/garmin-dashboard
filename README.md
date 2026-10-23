@@ -21,7 +21,11 @@ The key never goes in this repo. On Streamlit Community Cloud it lives in the ap
 
 ```toml
 GARMIN_PERSONAL_API_KEY = "paste-key-here"
+APP_PASSWORD = "a-password-only-you-know"
 ```
+
+`APP_PASSWORD` locks the dashboard: nothing is pulled from Garmin or shown until it's
+entered. Use it whenever the app is public on Streamlit.
 
 Keys expire (one year at most). When it does, create a new one on the
 [Personal API Key page](https://connect.garmin.com/app/settings/personalApiToken)
