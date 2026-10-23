@@ -158,14 +158,27 @@ def hrv_df(raw: list[dict]) -> pd.DataFrame:
     return df.drop_duplicates("date", keep="last").sort_values("date").reset_index(drop=True)
 
 
+def _grams_to_lb(v: float | None) -> float | None:
+    if not v:
+        return None
+    # Garmin sends grams; guard against a kg value just in case.
+    return v / GRAMS_PER_LB if v > 500 else v * 1000 / GRAMS_PER_LB
+
+
 def weight_df(raw: list[dict]) -> pd.DataFrame:
     rows = []
     for w in raw or []:
-        day = date_of(w)
-        grams = num(dig(w, "latestWeight.weight"))
-        if day is None or not grams:
-            continue
-        rows.append({"date": day, "weight_lb": grams / GRAMS_PER_LB})
+        # A daily summary holds latestWeight plus allWeightMetrics; a flat list holds weight directly.
+        entries = [w.get("latestWeight")] if isinstance(w.get("latestWeight"), dict) else []
+        if not entries:
+            entries = [m for m in (w.get("allWeightMetrics") or []) if isinstance(m, dict)] or [w]
+        for e in entries:
+            lb = _grams_to_lb(num(e.get("weight")))
+            day = date_of(e) or date_of(w)
+            if day is None and num(e.get("date")):
+                day = pd.Timestamp(int(num(e["date"])), unit="ms").normalize()
+            if lb and day is not None:
+                rows.append({"date": day, "weight_lb": lb})
     df = pd.DataFrame(rows, columns=["date", "weight_lb"])
     return df.drop_duplicates("date", keep="last").sort_values("date").reset_index(drop=True)
 

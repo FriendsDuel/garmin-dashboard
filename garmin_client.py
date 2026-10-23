@@ -244,7 +244,8 @@ def hrv(client: GarminClient, start: date, end: date) -> list[dict]:
 
 def weight(client: GarminClient, start: date, end: date) -> list[dict]:
     def fetch(a: date, b: date) -> list:
-        return first_list(client.get(f"/weight-service/weight/range/{iso(a)}/{iso(b)}"), "dailyWeightSummaries")
+        resp = client.get(f"/weight-service/weight/range/{iso(a)}/{iso(b)}", {"includeAll": "true"})
+        return first_list(resp, "dailyWeightSummaries", "dateWeightList", "weightList")
     return ranged(fetch, start, end, 366)
 
 
@@ -283,6 +284,17 @@ def pull_all(client: GarminClient, start: date, end: date, progress: Progress | 
     section("sleep", "Sleep", lambda: sleep(client, start, end))
     section("hrv", "HRV", lambda: hrv(client, start, end))
     section("weight", "Weigh-ins", lambda: weight(client, start, end))
+    data["weight_shape"] = _shape(data.get("weight"))
     section("zones", "Heart rate zones", lambda: heart_rate_zones(client))
     section("fitness_age", "Fitness age", lambda: fitness_age(client, end))
     return data
+
+
+def _shape(items: Any) -> dict:
+    """Field names only (no values) from the first item, for troubleshooting."""
+    if not isinstance(items, list) or not items or not isinstance(items[0], dict):
+        return {"count": len(items) if isinstance(items, list) else 0}
+    first = items[0]
+    return {"count": len(items), "keys": sorted(first),
+            "nested": {k: sorted(v[0] if isinstance(v, list) and v and isinstance(v[0], dict) else v)
+                       for k, v in first.items() if isinstance(v, dict) or (isinstance(v, list) and v and isinstance(v[0], dict))}}

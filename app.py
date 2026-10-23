@@ -475,6 +475,12 @@ with st.sidebar:
     st.markdown(f'<p class="small">{"Sample data" if is_demo else "Last pulled"}: {pulled.replace("T", " ")}<br>'
                 f'{len(A)} activities · {len(DAILY)} days · {len(SLEEP)} nights · {len(HRV)} HRV readings · {len(WEIGHT)} weigh-ins</p>',
                 unsafe_allow_html=True)
+    if not is_demo:
+        with st.expander("Troubleshooting"):
+            st.caption("What Garmin sent back for weigh-ins (field names only).")
+            st.json(raw.get("weight_shape") or {}, expanded=False)
+            if raw.get("errors"):
+                st.json(raw["errors"], expanded=False)
 st.markdown(f'<p class="small" style="margin-top:2rem">Read-only data from Garmin\'s Personal API. '
             f'Refreshes on its own every {CACHE_SECONDS // 60} minutes; open the sidebar to refresh now.</p>',
             unsafe_allow_html=True)
