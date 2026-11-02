@@ -1,0 +1,15 @@
+{
+  // Cloudflare Worker for the Garmin dashboard. Deployed by Cloudflare from this folder.
+  "name": "garmin-dashboard",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-10-01",
+  // Pull from Garmin every hour, at 7 minutes past.
+  "triggers": { "crons": ["7 * * * *"] },
+  // Where the pulled data is kept. Created automatically on first deploy, nothing to set up.
+  "durable_objects": { "bindings": [{ "name": "STORE", "class_name": "Store" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Store"] }],
+  "observability": { "enabled": true }
+  // Secrets (set in the Cloudflare dashboard, never here):
+  //   GARMIN_PERSONAL_API_KEY  your key from connect.garmin.com/app/settings/personalApiToken
+  //   APP_PASSWORD             the password that unlocks the page
+}
