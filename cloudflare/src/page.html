@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Garmin Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF0EE; --surface:#FFFFFF; --ink:#16242A; --muted:#5E6E72; --line:#D3D9D7;
+  --accent:#0E6B66; --accent-soft:#D5E9E6; --hr:#C4323C; --amber:#A86F00; --amber-soft:#FBEFD2; --pr:#6A3FB5; --light:#C9D3D0;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1A1D; --surface:#172529; --ink:#E6EEEC; --muted:#8FA3A6; --line:#2A3B40;
+    --accent:#3FB8AE; --accent-soft:#1D3B3B; --hr:#F0626B; --amber:#F2B233; --amber-soft:#3A3016; --pr:#B596F0; --light:#4A5E63;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1A1D; --surface:#172529; --ink:#E6EEEC; --muted:#8FA3A6; --line:#2A3B40;
+  --accent:#3FB8AE; --accent-soft:#1D3B3B; --hr:#F0626B; --amber:#F2B233; --amber-soft:#3A3016; --pr:#B596F0; --light:#4A5E63;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Barlow,system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,.cond{font-family:"Barlow Condensed","Arial Narrow",Barlow,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:18px 16px 48px;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-weight:700;font-size:clamp(36px,7vw,58px);line-height:.95;letter-spacing:-.01em}
+h2{margin:30px 0 12px;font-weight:600;font-size:28px;line-height:1.1}
+h3{margin:0 0 8px;font-weight:600;font-size:20px;line-height:1.15}
+.sub{color:var(--muted);margin:6px 0 0}
+.small{font-size:14px;color:var(--muted)}
+button{font:600 15px Barlow,system-ui,sans-serif;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:9px 14px}
+button:disabled{opacity:.55;cursor:default}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+.banner{background:var(--accent-soft);border-radius:12px;padding:12px 16px;margin:14px 0 0}
+.banner.warn{background:var(--amber-soft)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+.tile .lab{color:var(--muted);font-size:14px}
+.tile .val{font:700 38px/1.05 "Barlow Condensed","Arial Narrow",sans-serif}
+.tile .val.good{color:var(--accent)} .tile .val.warn{color:var(--amber)}
+.tile .note{color:var(--muted);font-size:14px;margin-top:2px}
+@media (max-width:480px){.tile .val{font-size:30px}.tile{padding:12px}}
+.meter{height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+svg.chart{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.legend i.ln{width:16px;height:0;border-top:2.5px solid;border-radius:0;vertical-align:3px}
+.legend i.dash{width:16px;height:0;border-top:2px dashed;border-radius:0;vertical-align:3px}
+.seg{display:inline-flex;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;margin:0 0 12px}
+.seg button{border:0;padding:6px 11px;background:transparent;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:500}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.rec{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.empty{color:var(--muted);margin:4px 0}
+footer{margin-top:34px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.inline{display:inline}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1 id="title"></h1><p class="sub" id="subline"></p></div>
+    <form method="post" action="/refresh" class="inline" id="refreshForm"><button id="refreshBtn" type="submit">Refresh from Garmin now</button></form>
+  </header>
+  <div id="banners"></div>
+  <section class="tiles" id="tiles"></section>
+
+  <h2>Weight against the goal</h2>
+  <div class="card" id="weight"></div>
+
+  <h2>This week against recent weeks</h2>
+  <div class="cols">
+    <div class="card"><h3>Time trained per week</h3><div id="timeWeeks"></div></div>
+    <div class="card"><h3>Zone 2 minutes per week</h3><div id="z2Weeks"></div></div>
+  </div>
+  <div class="card" style="margin-top:12px"><h3>By sport</h3><div id="bySport"></div></div>
+
+  <h2>Trends</h2>
+  <div class="seg" id="span" role="group" aria-label="Time window">
+    <button data-span="block" aria-pressed="true">Block</button><button data-span="91" aria-pressed="false">3 months</button><button data-span="182" aria-pressed="false">6 months</button><button data-span="364" aria-pressed="false">12 months</button>
+  </div>
+  <div class="cols">
+    <div class="card"><h3>Training load per week</h3><div id="load"></div></div>
+    <div class="card"><h3>Resting heart rate</h3><div id="rhr"></div></div>
+    <div class="card"><h3>HRV</h3><div id="hrv"></div></div>
+    <div class="card"><h3>Sleep</h3><div id="sleep"></div></div>
+  </div>
+
+  <h2>Records and biggest days</h2>
+  <div class="rec" id="records"></div>
+  <div class="card" style="margin-top:12px"><h3>Biggest weeks</h3><div id="bigWeeks"></div></div>
+  <div class="card" style="margin-top:12px"><h3>Recent activities</h3><div id="recent"></div></div>
+
+  <footer><p class="small" id="foot" style="margin:0"></p><a class="small" href="/logout">Sign out</a></footer>
+</main>
+<script>
+const BOOT = /*__DATA__*/null;
+const P = BOOT.program, D = BOOT.data || {}, M = D.meta || {};
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ---------- dates (day numbers keep the math simple) ---------- */
+const dn = (s) => Math.round(Date.parse(s.slice(0, 10) + "T00:00:00Z") / 864e5);
+const ds = (n) => new Date(n * 864e5).toISOString().slice(0, 10);
+const TODAY = dn(new Intl.DateTimeFormat("en-CA", { timeZone: BOOT.timezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()));
+const monday = (n) => n - ((new Date(n * 864e5).getUTCDay() + 6) % 7);
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const md = (n) => { const d = new Date(n * 864e5); return `${MON[d.getUTCMonth()]} ${d.getUTCDate()}`; };
+const wmd = (n) => `${DOW[new Date(n * 864e5).getUTCDay()]} ${md(n)}`;
+const fmtMin = (m) => { m = Math.round(m || 0); return m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}m` : `${m} min`; };
+const f1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
+const sum = (a, f) => a.reduce((t, x) => t + (+f(x) || 0), 0);
+const mean = (a) => (a.length ? a.reduce((t, x) => t + x, 0) / a.length : null);
+
+/* ---------- data ---------- */
+const A = Object.values(D.activities || {}).map((a) => ({ ...a, d: dn(a.date), wk: monday(dn(a.date)), z2: (a.z || [])[1] || 0 })).sort((a, b) => (a.start < b.start ? -1 : 1));
+const byDate = (o) => Object.values(o || {}).map((x) => ({ ...x, d: dn(x.date) })).sort((a, b) => a.d - b.d);
+const DAILY = byDate(D.daily), SLEEP = byDate(D.sleep), HRV = byDate(D.hrv), WEIGHT = byDate(D.weight);
+
+const B0 = dn(P.startDate), B1 = B0 + 7 * P.weeks - 1, dayIn = TODAY - B0, weekNo = Math.floor(dayIn / 7) + 1;
+const planned = P.weeklyPlan.filter((p) => !/^rest/i.test(p)).length || 1;
+const THIS_MON = monday(TODAY);
+
+/* ---------- svg chart helper ---------- */
+function chart(o) {
+  const W = o.w || 560, H = o.h || 220, pl = o.pl ?? 40, pr = 10, pt = 10, pb = 24;
+  const X = (v) => pl + ((v - o.x0) / ((o.x1 - o.x0) || 1)) * (W - pl - pr);
+  const Y = (v) => pt + ((o.y1 - v) / ((o.y1 - o.y0) || 1)) * (H - pt - pb);
+  let g = "";
+  for (const v of o.yt || []) g += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-dasharray="2 4"/><text x="${pl - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="12" fill="var(--muted)">${esc(o.yf ? o.yf(v) : v)}</text>`;
+  for (const [v, l] of o.xt || []) g += `<text x="${X(v)}" y="${H - 6}" text-anchor="middle" font-size="12" fill="var(--muted)">${esc(l)}</text>`;
+  for (const L of o.layers) {
+    if (L.band) { const p = L.band; if (p.length > 1) g += `<path d="M${p.map((q) => `${X(q[0])},${Y(q[1])}`).join("L")}L${[...p].reverse().map((q) => `${X(q[0])},${Y(q[2])}`).join("L")}Z" fill="${L.color}" opacity="${L.opacity ?? .14}"/>`; }
+    if (L.bars) for (const b of L.bars) { let base = 0; for (const s of b.stack) { if (!(s.v > 0)) continue; const y0 = Y(base), y1 = Y(base + s.v); g += `<rect x="${X(b.x) - L.bw / 2}" y="${y1}" width="${L.bw}" height="${Math.max(0, y0 - y1)}" fill="${s.color}" opacity="${b.op ?? 1}"><title>${esc(s.title || "")}</title></rect>`; base += s.v; } }
+    if (L.line && L.line.length > 1) g += `<polyline points="${L.line.map((q) => `${X(q[0])},${Y(q[1])}`).join(" ")}" fill="none" stroke="${L.color}" stroke-width="${L.width || 2.5}" ${L.dash ? `stroke-dasharray="${L.dash}"` : ""} stroke-linejoin="round" stroke-linecap="round"/>`;
+    if (L.dots) for (const q of L.dots) g += `<circle cx="${X(q[0])}" cy="${Y(q[1])}" r="${L.r || 3}" fill="${L.color}" opacity="${L.opacity ?? .45}"><title>${esc(q[2] || "")}</title></circle>`;
+    if (L.hline != null) g += `<line x1="${pl}" x2="${W - pr}" y1="${Y(L.hline)}" y2="${Y(L.hline)}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="6 5"/>${L.label ? `<text x="${W - pr}" y="${Y(L.hline) - 5}" text-anchor="end" font-size="12" fill="var(--muted)">${esc(L.label)}</text>` : ""}`;
+  }
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label)}" font-family="Barlow, sans-serif">${g}</svg>`;
+}
+function ticks(lo, hi, n = 4) {
+  const span = hi - lo || 1, s0 = span / n, mag = 10 ** Math.floor(Math.log10(s0));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= s0) || s0;
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6)); return out;
+}
+function dateTicks(x0, x1, n = 5) { const out = [], step = Math.max(1, Math.round((x1 - x0) / n)); for (let v = x0; v <= x1; v += step) out.push([v, md(v)]); return out; }
+const legend = (items) => `<div class="legend">${items.map(([cls, color, t]) => `<span><i class="${cls}" style="${cls ? "border-color" : "background"}:${color}"></i>${esc(t)}</span>`).join("")}</div>`;
+const note = (t) => `<p class="small" style="margin:8px 0 0">${t}</p>`;
+const emptyNote = (what) => `<p class="empty small">No ${what} in this window. Nights without the watch leave gaps.</p>`;
+
+/* ---------- header + status ---------- */
+function ago(iso) { if (!iso) return "never"; const m = Math.round((Date.now() - Date.parse(iso)) / 60000); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`; }
+function renderHeader() {
+  document.title = P.name;
+  $("title").textContent = P.name;
+  $("subline").textContent = `Lose ${P.goalLossLb} lb over ${P.weeks} weeks · ${md(B0)} to ${md(B1)} · from Garmin, updated ${ago(M.syncedAt)}`;
+  const b = [];
+  if (!BOOT.hasKey) b.push(["warn", `<b>No Garmin key yet.</b> Add a secret called <b>GARMIN_PERSONAL_API_KEY</b> to this Worker in Cloudflare (Settings → Variables and Secrets). Get a key on <a href="https://connect.garmin.com/app/settings/personalApiToken" target="_blank" rel="noopener">Garmin's Personal API Key page</a>.`]);
+  else if (M.authError) b.push(["warn", `<b>Garmin didn't accept the key.</b> ${esc(M.authError)} Create a new one on <a href="https://connect.garmin.com/app/settings/personalApiToken" target="_blank" rel="noopener">Garmin's Personal API Key page</a> and replace <b>GARMIN_PERSONAL_API_KEY</b> in Cloudflare.`]);
+  else if (!M.syncedAt) b.push(["", `<b>First pull from Garmin is running.</b> Give it a minute, then reload.`]);
+  else if (!M.historyComplete) b.push(["", `Still loading older history from Garmin. Recent weeks are complete; the rest fills in over the next few hourly updates, or tap <b>Refresh</b> to speed it up.`]);
+  for (const [k, v] of Object.entries(M.errors || {})) b.push(["warn", `Couldn't load ${esc(k)} on the last update: ${esc(v)}`]);
+  $("banners").innerHTML = b.map(([c, t]) => `<div class="banner ${c}">${t}</div>`).join("");
+  $("refreshForm").onsubmit = () => { const x = $("refreshBtn"); x.disabled = true; x.textContent = "Pulling from Garmin…"; };
+}
+
+/* ---------- tiles ---------- */
+const tile = (lab, val, sub = "", tone = "", meter = null) => `<div class="card tile"><div class="lab">${lab}</div><div class="val ${tone}">${val}</div><div class="note">${sub}</div>${meter != null ? `<div class="meter"><i style="width:${Math.max(0, Math.min(100, meter)).toFixed(0)}%"></i></div>` : ""}</div>`;
+const W7 = WEIGHT.map((w) => ({ ...w, avg: mean(WEIGHT.filter((x) => x.d <= w.d && x.d > w.d - 7).map((x) => x.lb)) }));
+const goalPace = (d) => P.startWeightLb - P.goalLossLb * Math.min(Math.max((d - B0) / (B1 - B0), 0), 1);
+function renderTiles() {
+  const t = [];
+  if (dayIn < 0) t.push(tile("Block", "Not started", `starts ${wmd(B0)}`));
+  else if (dayIn >= 7 * P.weeks) t.push(tile("Block", "Complete", `ended ${md(B1)}`, "good"));
+  else t.push(tile("Block", `Week ${weekNo}`, `of ${P.weeks} · ${B1 - TODAY} days to go`, "", (100 * (dayIn + 1)) / (7 * P.weeks)));
+  const wb = W7.filter((w) => w.d >= B0);
+  if (wb.length) {
+    const last = wb[wb.length - 1], lost = P.startWeightLb - last.avg, pace = P.startWeightLb - goalPace(Math.min(TODAY, B1));
+    t.push(tile("Weight · 7-day average", `${lost >= 0 ? "−" : "+"}${f1(Math.abs(lost))} lb`, `${f1(last.avg)} lb now · pace says −${f1(pace)}`, lost >= pace - 0.3 ? "good" : "warn", (100 * lost) / P.goalLossLb));
+  } else t.push(tile("Weight · 7-day average", "—", "No weigh-ins in Garmin Connect yet"));
+  const wk = A.filter((a) => a.wk === THIS_MON), z2 = sum(wk, (a) => a.z2);
+  t.push(tile("Zone 2 this week", `${Math.round(z2)} min`, `target ${P.zone2TargetMin} min`, z2 >= P.zone2TargetMin ? "good" : "", (100 * z2) / P.zone2TargetMin));
+  t.push(tile("Workouts this week", `${wk.length} / ${planned}`, `${fmtMin(sum(wk, (a) => a.min))} trained`, wk.length >= planned ? "good" : "", (100 * wk.length) / planned));
+  $("tiles").innerHTML = t.join("");
+}
+
+/* ---------- weight ---------- */
+function renderWeight() {
+  const wb = W7.filter((w) => w.d >= B0 && w.d <= B1);
+  if (!wb.length) { $("weight").innerHTML = `<p class="empty">Garmin only has weigh-ins from a Garmin scale or ones logged in Garmin Connect. None are in this block yet.</p>`; return; }
+  const lo = Math.min(...wb.map((w) => w.lb), P.startWeightLb - P.goalLossLb) - 1.5, hi = Math.max(...wb.map((w) => w.lb), P.startWeightLb) + 1.5;
+  const narrow = innerWidth < 640;
+  $("weight").innerHTML = chart({ w: narrow ? 440 : 1000, h: narrow ? 300 : 280, x0: B0, x1: B1, y0: lo, y1: hi, yt: ticks(lo, hi, 5), xt: [...Array(P.weeks)].map((_, i) => [B0 + i * 7 + 3, narrow && i % 2 ? "" : `W${i + 1}`]), label: "Weight against the goal",
+    layers: [{ line: [[B0, P.startWeightLb], [B1, P.startWeightLb - P.goalLossLb]], color: "var(--muted)", dash: "7 6", width: 2 },
+      { dots: wb.map((w) => [w.d, w.lb, `${wmd(w.d)}: ${f1(w.lb)} lb`]), color: "var(--muted)", r: narrow ? 3 : 4, opacity: .5 },
+      { line: wb.map((w) => [w.d, w.avg]), color: "var(--accent)", width: 3 }] })
+    + legend([["ln", "var(--accent)", "7-day average"], ["", "var(--muted)", "Single weigh-ins"], ["dash", "var(--muted)", `Pace to −${P.goalLossLb} lb by ${md(B1)}`]])
+    + note("Day-to-day swings of 1–3 lb are water, salt and sleep. The 7-day average is the number to watch.");
+}
+
+/* ---------- this week vs recent ---------- */
+const CAT = { Strength: "var(--accent)", Cardio: "var(--amber)", Other: "var(--muted)" };
+function renderRecentWeeks() {
+  const weeks = [...Array(8)].map((_, i) => THIS_MON - (7 - i) * 7), lab = (w) => (w === THIS_MON ? "This week" : md(w));
+  const cats = ["Strength", "Cardio", "Other"].filter((c) => A.some((a) => a.cat === c && weeks.includes(a.wk)));
+  if (!A.some((a) => weeks.includes(a.wk))) { $("timeWeeks").innerHTML = $("z2Weeks").innerHTML = `<p class="empty">No activities in the last 8 weeks.</p>`; $("bySport").innerHTML = ""; return; }
+  const hrs = weeks.map((w) => cats.map((c) => sum(A.filter((a) => a.wk === w && a.cat === c), (a) => a.min) / 60));
+  const maxH = Math.max(1, ...hrs.map((r) => r.reduce((a, b) => a + b, 0)));
+  const xt = weeks.map((w, i) => [i, i % 2 === 1 || w === THIS_MON ? lab(w) : ""]);
+  $("timeWeeks").innerHTML = chart({ x0: -.6, x1: 7.6, y0: 0, y1: maxH * 1.12, yt: ticks(0, maxH * 1.1), yf: (v) => v + "h", xt, label: "Hours trained per week",
+    layers: [{ bw: 34, bars: weeks.map((w, i) => ({ x: i, op: w === THIS_MON ? 1 : .72, stack: cats.map((c, k) => ({ v: hrs[i][k], color: CAT[c], title: `${lab(w)} · ${c}: ${f1(hrs[i][k])} h` })) })) }] })
+    + legend(cats.map((c) => ["", CAT[c], c]));
+  const z2 = weeks.map((w) => sum(A.filter((a) => a.wk === w), (a) => a.z2)), maxZ = Math.max(P.zone2TargetMin, ...z2) * 1.12;
+  $("z2Weeks").innerHTML = chart({ x0: -.6, x1: 7.6, y0: 0, y1: maxZ, yt: ticks(0, maxZ), xt, label: "Zone 2 minutes per week",
+    layers: [{ bw: 34, bars: weeks.map((w, i) => ({ x: i, op: w === THIS_MON ? 1 : .72, stack: [{ v: z2[i], color: "var(--accent)", title: `${lab(w)}: ${Math.round(z2[i])} min` }] })) }, { hline: P.zone2TargetMin, label: "target" }] });
+
+  const cur = A.filter((a) => a.wk === THIS_MON), prev = A.filter((a) => a.wk >= THIS_MON - 28 && a.wk < THIS_MON);
+  const sports = [...new Set([...cur, ...prev].map((a) => a.sport))].sort();
+  $("bySport").innerHTML = sports.length ? `<div class="tablewrap"><table><thead><tr><th>Sport</th><th class="n">Sessions</th><th class="n">Avg (prev 4 wks)</th><th class="n">Time</th><th class="n">Avg time</th><th class="n">Distance</th><th class="n">Avg distance</th></tr></thead><tbody>${sports.map((s) => {
+    const c = cur.filter((a) => a.sport === s), p = prev.filter((a) => a.sport === s), km = sum(c, (a) => a.km) + sum(p, (a) => a.km) > 0;
+    return `<tr><td>${esc(s)}</td><td class="n">${c.length}</td><td class="n">${f1(p.length / 4)}</td><td class="n">${fmtMin(sum(c, (a) => a.min))}</td><td class="n">${fmtMin(sum(p, (a) => a.min) / 4)}</td><td class="n">${km ? f1(sum(c, (a) => a.km)) + " km" : "—"}</td><td class="n">${km ? f1(sum(p, (a) => a.km) / 4) + " km" : "—"}</td></tr>`;
+  }).join("")}</tbody></table></div>` : `<p class="empty">Nothing logged in the last five weeks.</p>`;
+}
+
+/* ---------- trends ---------- */
+let SPAN = "block";
+function renderTrends() {
+  const x0 = SPAN === "block" ? B0 : TODAY - +SPAN, x1 = SPAN === "block" ? Math.max(TODAY, B0 + 7) : TODAY;
+  const inW = (r) => r.d >= x0 && r.d <= x1, xt = dateTicks(x0, x1, 4);
+  document.querySelectorAll("#span button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.span === SPAN));
+
+  // training load per week
+  const Aw = A.filter(inW);
+  if (!sum(Aw, (a) => a.load)) $("load").innerHTML = emptyNote("training load");
+  else {
+    const weeks = []; for (let w = monday(x0); w <= THIS_MON; w += 7) weeks.push(w);
+    const vals = weeks.map((w) => ({ w, load: sum(Aw.filter((a) => a.wk === w), (a) => a.load), n: Aw.filter((a) => a.wk === w).length }));
+    const mx = Math.max(...vals.map((v) => v.load)) * 1.12, every = Math.ceil(weeks.length / 6);
+    $("load").innerHTML = chart({ x0: -.6, x1: weeks.length - .4, y0: 0, y1: mx, yt: ticks(0, mx), label: "Training load per week",
+      xt: vals.map((v, i) => [i, (weeks.length - 1 - i) % every === 0 ? md(v.w) : ""]),
+      layers: [{ bw: Math.max(6, Math.min(34, 420 / weeks.length)), bars: vals.map((v, i) => ({ x: i, op: v.w === THIS_MON ? 1 : .75, stack: [{ v: v.load, color: "var(--accent)", title: `Week of ${md(v.w)}: load ${Math.round(v.load)}, ${v.n} sessions` }] })) }] })
+      + note("Steady building is good. A jump of more than about a third in one week is where injuries start.");
+  }
+
+  // resting HR
+  const R = DAILY.filter((d) => d.rhr != null);
+  const Rw = R.map((d, i) => { const win = R.slice(Math.max(0, i - 6), i + 1).filter((x) => x.d > d.d - 7).map((x) => x.rhr); return { ...d, avg: win.length >= 3 ? mean(win) : null }; }).filter(inW);
+  if (!Rw.length) $("rhr").innerHTML = emptyNote("resting heart rate");
+  else {
+    const lo = Math.min(...Rw.map((d) => d.rhr)) - 2, hi = Math.max(...Rw.map((d) => d.rhr)) + 2;
+    $("rhr").innerHTML = chart({ x0, x1, y0: lo, y1: hi, yt: ticks(lo, hi), xt, label: "Resting heart rate",
+      layers: [{ dots: Rw.map((d) => [d.d, d.rhr, `${wmd(d.d)}: ${d.rhr} bpm`]), color: "var(--hr)", opacity: .35 }, { line: Rw.filter((d) => d.avg != null).map((d) => [d.d, d.avg]), color: "var(--hr)" }] })
+      + legend([["ln", "var(--hr)", "7-day average"], ["", "var(--hr)", "Daily, bpm"]])
+      + note("Drifting down over weeks means fitness is improving. A sudden rise of 5+ bpm often means poor recovery or illness.");
+  }
+
+  // HRV
+  const Hw = HRV.filter(inW);
+  if (!Hw.length) $("hrv").innerHTML = emptyNote("HRV readings");
+  else {
+    const vals = Hw.flatMap((h) => [h.last, h.wk, h.lo, h.hi]).filter((v) => v != null), lo = Math.min(...vals) - 3, hi = Math.max(...vals) + 3;
+    $("hrv").innerHTML = chart({ x0, x1, y0: lo, y1: hi, yt: ticks(lo, hi), xt, label: "HRV",
+      layers: [{ band: Hw.filter((h) => h.lo != null && h.hi != null).map((h) => [h.d, h.hi, h.lo]), color: "var(--accent)" },
+        { dots: Hw.map((h) => [h.d, h.last, `${wmd(h.d)}: ${h.last} ms${h.status ? " · " + h.status : ""}`]), color: "var(--accent)", opacity: .4 },
+        { line: Hw.filter((h) => h.wk != null).map((h) => [h.d, h.wk]), color: "var(--accent)" }] })
+      + legend([["ln", "var(--accent)", "7-day average"], ["", "var(--accent)", "Last night, ms"]])
+      + note("Shaded band: your balanced range from Garmin. Staying inside it means recovery is keeping up with training.");
+  }
+
+  // sleep
+  const Sw = SLEEP.filter(inW);
+  if (!Sw.length) $("sleep").innerHTML = emptyNote("sleep data");
+  else {
+    const mx = Math.max(...Sw.map((s) => s.deep + s.rem + s.light)) * 1.1, st = [["deep", "Deep", "var(--pr)"], ["rem", "REM", "var(--accent)"], ["light", "Light", "var(--light)"]];
+    const avgH = mean(Sw.map((s) => s.total)), sc = Sw.map((s) => s.score).filter((v) => v != null), avgS = mean(sc);
+    $("sleep").innerHTML = chart({ x0: x0 - .5, x1: x1 + .5, y0: 0, y1: mx, yt: ticks(0, mx), yf: (v) => v + "h", xt, label: "Sleep by stage",
+      layers: [{ bw: Math.max(2, Math.min(14, 480 / (x1 - x0 + 1))), bars: Sw.map((s) => ({ x: s.d, stack: st.map(([k, l, c]) => ({ v: s[k], color: c, title: `${wmd(s.d)} · ${l}: ${f1(s[k])} h (total ${f1(s.total)} h${s.score != null ? ", score " + s.score : ""})` })) })) }] })
+      + legend(st.map(([, l, c]) => ["", c, l]))
+      + note(`Average ${f1(avgH)} h a night${avgS != null ? `, sleep score ${Math.round(avgS)}` : ""}. Short sleep raises hunger the next day, which makes the weight goal harder.`);
+  }
+}
+
+/* ---------- records ---------- */
+function renderRecords() {
+  if (!A.length) { $("records").innerHTML = `<p class="empty">Records show up once activities load.</p>`; $("bigWeeks").innerHTML = $("recent").innerHTML = ""; return; }
+  const out = [], best = (list, k, label, fmt) => { const c = list.filter((a) => a[k] > 0); if (!c.length) return; const r = c.reduce((x, y) => (y[k] > x[k] ? y : x)); out.push(tile(label, fmt(r[k]), `${esc(r.name)} · ${md(r.d)}, ${r.date.slice(0, 4)}`)); };
+  best(A.filter((a) => a.sport === "Cycling"), "km", "Longest ride", (v) => f1(v) + " km");
+  best(A.filter((a) => a.sport === "Running"), "km", "Longest run", (v) => f1(v) + " km");
+  best(A, "min", "Longest session", fmtMin);
+  best(A, "load", "Biggest training load", (v) => Math.round(v));
+  best(A, "kcal", "Most calories", (v) => Math.round(v).toLocaleString());
+  best(A, "elev", "Most climbing", (v) => Math.round(v).toLocaleString() + " m");
+  best(A, "z2", "Most Zone 2 in one go", fmtMin);
+  $("records").innerHTML = out.join("");
+
+  const wk = {}; for (const a of A) { const w = (wk[a.wk] ||= { w: a.wk, min: 0, n: 0, load: 0, z2: 0, km: 0 }); w.min += a.min; w.n++; w.load += a.load || 0; w.z2 += a.z2; w.km += a.km; }
+  const top = Object.values(wk).sort((a, b) => b.min - a.min).slice(0, 5);
+  $("bigWeeks").innerHTML = `<div class="tablewrap"><table><thead><tr><th>Week of</th><th class="n">Time</th><th class="n">Sessions</th><th class="n">Training load</th><th class="n">Zone 2</th><th class="n">Distance</th></tr></thead><tbody>${top.map((w) => `<tr><td>${md(w.w)}, ${ds(w.w).slice(0, 4)}</td><td class="n">${fmtMin(w.min)}</td><td class="n">${w.n}</td><td class="n">${Math.round(w.load)}</td><td class="n">${fmtMin(w.z2)}</td><td class="n">${f1(w.km)} km</td></tr>`).join("")}</tbody></table></div>`;
+
+  const last = [...A].reverse().slice(0, 12);
+  $("recent").innerHTML = `<div class="tablewrap"><table><thead><tr><th>Date</th><th>Activity</th><th>Sport</th><th class="n">Time</th><th class="n">Distance</th><th class="n">Avg HR</th><th class="n">Zone 2</th><th class="n">Load</th></tr></thead><tbody>${last.map((a) => `<tr><td>${wmd(a.d)}</td><td>${esc(a.name)}</td><td>${esc(a.sport)}</td><td class="n">${fmtMin(a.min)}</td><td class="n">${a.km > 0 ? f1(a.km) + " km" : "—"}</td><td class="n">${a.hr != null ? Math.round(a.hr) : "—"}</td><td class="n">${fmtMin(a.z2)}</td><td class="n">${a.load != null ? Math.round(a.load) : "—"}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function renderFoot() {
+  $("foot").textContent = `Last pulled from Garmin ${M.syncedAt ? new Date(M.syncedAt).toLocaleString() : "not yet"} · updates every hour · ${A.length} activities · ${DAILY.length} days · ${SLEEP.length} nights · ${HRV.length} HRV readings · ${WEIGHT.length} weigh-ins`;
+}
+
+renderHeader(); renderTiles(); renderWeight(); renderRecentWeeks(); renderTrends(); renderRecords(); renderFoot();
+document.querySelectorAll("#span button").forEach((b) => (b.onclick = () => { SPAN = b.dataset.span; renderTrends(); }));
+</script>
+</body>
+</html>
